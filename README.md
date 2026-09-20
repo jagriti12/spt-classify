@@ -19,8 +19,8 @@ the same folds as the accuracy above, so the two always agree.
 ## Install
 
 ```bash
-git clone https://github.com/jagriti12/spt-classify.git
-cd spt-classify
+git clone https://github.com/jagriti12/spt-classify-.git
+cd spt-classify-
 pip install -e .
 ```
 

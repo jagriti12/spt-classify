@@ -22,8 +22,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jagriti12/spt-classify"
-Source = "https://github.com/jagriti12/spt-classify"
+Homepage = "https://github.com/jagriti12/spt-classify-"
+Source = "https://github.com/jagriti12/spt-classify-"
 Paper = "https://doi.org/10.1021/cbmi.5c00057"
 
 [project.optional-dependencies]
