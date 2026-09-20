@@ -13,6 +13,9 @@ On simulated trajectories with known ground truth, the pipeline reaches
 
 ![Confusion matrix](docs/confusion_matrix.png)
 
+Regenerate that panel with `python examples/make_confusion_matrix.py`; it uses
+the same folds as the accuracy above, so the two always agree.
+
 ## Install
 
 ```bash
@@ -21,7 +24,7 @@ cd spt-classify
 pip install -e .
 ```
 
-Requires Python 3.9+, NumPy, SciPy and scikit-learn.
+Requires Python 3.9+, NumPy and scikit-learn (1.2 or newer).
 
 ## Use it in 60 seconds
 
@@ -77,6 +80,9 @@ and MSD ratio first, matching what the paper found on experimental trajectories.
   when the answer feeds a biological claim.
 - **Short tracks are rejected, not silently mangled.** Tracks under 12 points
   raise an error rather than returning a feature vector built on three steps.
+- **Confinement is enforced, not approximated.** A step that overshoots the
+  sphere is folded back repeatedly until the particle is inside, so `confined`
+  stays confined even when the step size approaches the confinement radius.
 
 ## Limitations
 
@@ -86,6 +92,10 @@ and MSD ratio first, matching what the paper found on experimental trajectories.
   are messier and accuracy on experimental data is correspondingly lower (~80%).
 - Four classes only. Trajectories that switch state mid-track are labeled by the
   dominant mode; segment-level classification is a different problem.
+- `classify_tracks(..., tune_model=True)` searches hyperparameters on the same
+  folds it then scores, so that accuracy is a model-selection number, not a
+  generalization estimate. The default (untuned) path is the honest one, and it
+  is what the 93% above comes from.
 
 ## Tests
 
@@ -95,7 +105,8 @@ pytest
 
 The suite checks feature behaviour against physics rather than just shapes: MSD
 grows linearly for Brownian motion, directed tracks fill less space than random
-ones, and confined tracks score higher trappedness.
+ones, confined tracks score higher trappedness, and simulated confined tracks
+never leave their sphere.
 
 ## Citation
 
