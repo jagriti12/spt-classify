@@ -1,3 +1,4 @@
+![tests](https://github.com/jagriti12/spt-classify/actions/workflows/tests.yml/badge.svg)
 # spt-classify
 
 Motion-type classification for 3D single-particle tracking, in Python.
