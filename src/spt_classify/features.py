@@ -22,6 +22,22 @@ def _steps(track: np.ndarray) -> np.ndarray:
     return np.diff(track, axis=0)
 
 
+def _max_pairwise_distance(track: np.ndarray) -> float:
+    """Largest distance between any two points on the track.
+
+    Computed in row blocks: the naive form materializes an (n, n) matrix, which
+    is 800 MB for a 10,000-point track and dies on anything longer.
+    """
+    n = len(track)
+    block = max(1, 2_000_000 // max(n, 1))
+    best = 0.0
+    for start in range(0, n, block):
+        chunk = track[start : start + block]
+        d = np.linalg.norm(chunk[:, None, :] - track[None, :, :], axis=-1)
+        best = max(best, float(d.max()))
+    return best
+
+
 def msd(track: np.ndarray, lag: int) -> float:
     """Mean squared displacement at a given lag, in the track's length units."""
     if lag < 1 or lag >= len(track):
@@ -48,8 +64,7 @@ def kurtosis(track: np.ndarray) -> float:
 def fractal_dimension(track: np.ndarray) -> float:
     """Path-filling dimension: ~1 for directed, ~2 for random, ~3 for confined."""
     n = len(track)
-    dists = np.linalg.norm(track[:, None, :] - track[None, :, :], axis=-1)
-    d_max = dists.max()
+    d_max = _max_pairwise_distance(track)
     path_length = np.sum(np.linalg.norm(_steps(track), axis=1))
     if d_max <= 0 or path_length <= 0:
         return np.nan
@@ -69,6 +84,8 @@ def msd_ratio(track: np.ndarray, lag1: int = 1, lag2: int = 10) -> float:
 
 def gaussianity(track: np.ndarray, lag: int = 1) -> float:
     """Fourth-moment deviation from a Gaussian displacement distribution."""
+    if lag < 1 or lag >= len(track):
+        return np.nan
     disp = track[lag:] - track[:-lag]
     r2 = np.sum(disp**2, axis=1)
     mean_r2 = np.mean(r2)
@@ -94,8 +111,7 @@ def trappedness(track: np.ndarray, dt: float = 1.0) -> float:
         return np.nan
     d = track.shape[1]
     diffusivity = m1 / (2 * d * dt)
-    dists = np.linalg.norm(track[:, None, :] - track[None, :, :], axis=-1)
-    r0 = dists.max() / 2
+    r0 = _max_pairwise_distance(track) / 2
     if r0 <= 0:
         return np.nan
     return float(1 - np.exp(0.2048 - 0.25117 * (diffusivity * n * dt / r0**2)))

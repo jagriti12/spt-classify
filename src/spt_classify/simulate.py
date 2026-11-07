@@ -31,7 +31,16 @@ def directed(n_steps: int, D: float = 0.1, v: float = 0.15, dt: float = 1.0, rng
 
 
 def confined(n_steps: int, D: float = 0.1, radius: float = 1.0, dt: float = 1.0, rng=None) -> np.ndarray:
-    """Diffusion inside a reflecting sphere of the given radius."""
+    """Diffusion inside a reflecting sphere of the given radius.
+
+    A step that overshoots is folded back through the surface. One fold is only
+    enough while the overshoot is less than the diameter; a step longer than
+    that lands outside again, so keep folding until the particle is genuinely
+    inside. This matters whenever sigma is comparable to the radius, which is
+    exactly the tightly-confined regime worth simulating.
+    """
+    if radius <= 0:
+        raise ValueError("radius must be positive")
     rng = np.random.default_rng(rng)
     sigma = np.sqrt(2 * D * dt)
     pos = np.zeros(3)
@@ -39,8 +48,9 @@ def confined(n_steps: int, D: float = 0.1, radius: float = 1.0, dt: float = 1.0,
     for _ in range(n_steps - 1):
         trial = pos + rng.normal(0.0, sigma, size=3)
         r = np.linalg.norm(trial)
-        if r > radius:  # reflect back inside the sphere
+        while r > radius:  # fold back through the sphere surface
             trial = trial * (2 * radius - r) / r
+            r = np.linalg.norm(trial)
         pos = trial
         out.append(pos.copy())
     return np.asarray(out)
