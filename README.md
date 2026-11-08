@@ -109,6 +109,18 @@ grows linearly for Brownian motion, directed tracks fill less space than random
 ones, confined tracks score higher trappedness, and simulated confined tracks
 never leave their sphere.
 
+## Docker
+
+```
+docker build -t spt-classify .
+docker run --rm spt-classify          # runs the demo
+docker run --rm spt-classify pytest   # runs the test suite
+```
+
+The container reproduces the accuracy above on a clean Linux image, which is
+the check that matters: the result does not depend on anything installed
+locally.
+
 ## Citation
 
 > Chatterjee, J.; Chatterjee, S.; Gillett, E. N.; Kovalenko, N.; Fan, D.; Landes, C. F.
